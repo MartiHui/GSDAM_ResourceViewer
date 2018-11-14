@@ -1,0 +1,18 @@
+#ifndef RESOURCECONTAINER_H
+#define RESOURCECONTAINER_H
+
+#include "resourceinfo.h"
+
+class ResourceContainer
+{
+private:
+    ResourceInfo rInfo;
+    
+public:
+    double m_cpuUsage[50] {0};
+    double m_memoryUsage[50] {0};
+    
+    ResourceContainer();
+};
+
+#endif // RESOURCECONTAINER_H
