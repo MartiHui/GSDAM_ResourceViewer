@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "resourceinfo.h"
 
 ResourceInfo::ResourceInfo()
@@ -10,23 +12,35 @@ ResourceInfo::ResourceInfo()
 }
 
 double ResourceInfo::getMemoryTotal() {
-    return (float)m_memoryTotal / (float)(1024 * 1024 * 1024);
+    double memory = (float)m_memoryTotal / (float)(1024 * 1024 * 1024);
+    return formatNumber(memory);
 }
 
 double ResourceInfo::getMemoryUsage() {
+    double memory;
 #ifdef _WIN32
-    return W_getMemoryUsage();
+    memory =  W_getMemoryUsage();
 #elif __linux__
 
 #endif
+
+    return formatNumber(memory);
 }
 
 double ResourceInfo::getCpuUsage() {
+    double cpu;
 #ifdef _WIN32
-    return W_getCpuUsage();
+    cpu = W_getCpuUsage();
 #elif __linux__
 
 #endif
+
+    return formatNumber(cpu);
+}
+
+// Redondea el número a dos decimales
+double ResourceInfo::formatNumber(double num) {
+    return round(num * 100) / 100;
 }
 
 #ifdef _WIN32

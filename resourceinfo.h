@@ -22,7 +22,7 @@ private:
 #elif __linux__ // Linux
 
 #endif
-    void setMemoryTotal();
+    double formatNumber(double num);
 
 public:
     ResourceInfo();
