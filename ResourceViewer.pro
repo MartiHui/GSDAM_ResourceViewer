@@ -30,12 +30,14 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     resourceinfo.cpp \
-    resourcecontainer.cpp
+    resourcecontainer.cpp \
+    timeplot.cpp
 
 HEADERS += \
         mainwindow.h \
     resourceinfo.h \
-    resourcecontainer.h
+    resourcecontainer.h \
+    timeplot.h
 
 FORMS += \
         mainwindow.ui

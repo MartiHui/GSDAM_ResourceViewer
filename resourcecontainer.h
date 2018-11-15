@@ -11,7 +11,7 @@
 class ResourceContainer
 {
 private:
-    ResourceInfo rInfo;
+    ResourceInfo m_rInfo;
 
     void readFile();
     void writeFile(double cpu, double memory);

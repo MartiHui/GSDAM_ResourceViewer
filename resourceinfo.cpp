@@ -87,5 +87,29 @@ float ResourceInfo::calculateCpuLoad(unsigned long long idleTicks, unsigned long
     return ret;
 }
 #elif __linux
+void ResourceInfo::L_setMemoryTotal() {
+    struct sysinfo memInfo;
 
+    sysinfo (&memInfo);
+    long long totalPhysMem = memInfo.totalram;
+    //Multiply in next statement to avoid int overflow on right hand side...
+    totalPhysMem *= memInfo.mem_unit;
+
+    m_memoryTotal = totalPhysMem;
+}
+
+void ResourceInfo::L_getMemoryUsage() {
+    struct sysinfo memInfo;
+
+    sysinfo (&memInfo);
+    long long physMemUsed = memInfo.totalram - memInfo.freeram;
+    //Multiply in next statement to avoid int overflow on right hand side...
+    physMemUsed *= memInfo.mem_unit;
+
+    return ((float)physMemUsed / m_memoryTotal) * 100;
+}
+
+void ResourceInfo::L_getCpuUsage() {
+
+}
 #endif

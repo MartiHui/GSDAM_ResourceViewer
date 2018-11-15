@@ -8,7 +8,9 @@
 
 int main(int argc, char *argv[])
 {
-    ResourceContainer rc;
-    rc.getInfo();
-    return 0;
+    QApplication a(argc, argv);
+    MainWindow w;
+    w.show();
+
+    return a.exec();
 }
