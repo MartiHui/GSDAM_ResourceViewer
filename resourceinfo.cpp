@@ -19,9 +19,9 @@ double ResourceInfo::getMemoryTotal() {
 double ResourceInfo::getMemoryUsage() {
     double memory;
 #ifdef _WIN32
-    memory =  W_getMemoryUsage();
+    memory = W_getMemoryUsage();
 #elif __linux__
-
+    memory = L_getMemoryUsage();
 #endif
 
     return formatNumber(memory);
@@ -32,7 +32,7 @@ double ResourceInfo::getCpuUsage() {
 #ifdef _WIN32
     cpu = W_getCpuUsage();
 #elif __linux__
-
+    cpu = L_getCpuUsage();
 #endif
 
     return formatNumber(cpu);
@@ -98,7 +98,7 @@ void ResourceInfo::L_setMemoryTotal() {
     m_memoryTotal = totalPhysMem;
 }
 
-void ResourceInfo::L_getMemoryUsage() {
+double ResourceInfo::L_getMemoryUsage() {
     struct sysinfo memInfo;
 
     sysinfo (&memInfo);
@@ -109,7 +109,71 @@ void ResourceInfo::L_getMemoryUsage() {
     return ((float)physMemUsed / m_memoryTotal) * 100;
 }
 
-void ResourceInfo::L_getCpuUsage() {
+double ResourceInfo::L_getCpuUsage() {
+    std::vector<CPUData> entries1;
+    std::vector<CPUData> entries2;
 
+    readStatsCpu(entries1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    readStatsCpu(entries2);
+
+    double usage = 0.0;
+    const size_t NUM_ENTRIES = entries1.size();
+    for (size_t i = 0; i < NUM_ENTRIES; ++i) {
+        const CPUData &e1 = entries1[i];
+        const CPUData &e2 = entries2[i];
+        if (e1.cpu == "tot") {
+            usage = (double)(getActiveTime(e2) - getActiveTime(e1));
+            break;
+        }
+    }
+
+    return usage;
+}
+
+
+void ResourceInfo::readStatsCpu(std::vector<CPUData> &entries) {
+    std::ifstream fileStat("proc/stat");
+    std::string line;
+
+    const std::string STR_CPU("cpu");
+    const std::size_t LEN_STR_CPU = STR_CPU.size();
+    const std::string STR_TOT("tot");
+
+    while (std::getline(fileStat, line)) {
+        if (!line.compare(0, LEN_STR_CPU, STR_CPU)) {
+            std::istringstream ss(line);
+
+            entries.emplace_back(CPUData());
+            CPUData &entry = entries.back();
+
+            ss >> entry.cpu;
+
+            if (entry.cpu.size() > LEN_STR_CPU) {
+                entry.cpu.erase(0, LEN_STR_CPU);
+            } else {
+                entry.cpu = STR_TOT;
+            }
+
+            for (int i= 0; i < NUM_CPU_STATES; i++) {
+                ss >> entry.times[i];
+            }
+        }
+    }
+}
+
+size_t ResourceInfo::getIdleTime(const CPUData &e) {
+    return e.times[S_IDLE] + e.times[S_IOWAIT];
+}
+
+size_t ResourceInfo::getActiveTime(const CPUData &e) {
+    return e.times[S_USER] +
+        e.times[S_NICE] +
+        e.times[S_SYSTEM] +
+        e.times[S_IRQ] +
+        e.times[S_SOFTIRQ] +
+        e.times[S_STEAL] +
+        e.times[S_GUEST] +
+        e.times[S_GUEST_NICE];
 }
 #endif
